@@ -1,0 +1,37 @@
+[
+  {
+    "id": "all",
+    "label": "All Items",
+    "order": 0
+  },
+  {
+    "id": "starters-chicken",
+    "label": "Starters & Chicken",
+    "order": 1
+  },
+  {
+    "id": "shawarma-spot",
+    "label": "Shawarma Specials",
+    "order": 2
+  },
+  {
+    "id": "gravy-variety",
+    "label": "Gravy Variety",
+    "order": 3
+  },
+  {
+    "id": "indian-variety",
+    "label": "Indian & Biryani",
+    "order": 4
+  },
+  {
+    "id": "chinese-variety",
+    "label": "Chinese & Noodles",
+    "order": 5
+  },
+  {
+    "id": "sandwich-snacks",
+    "label": "Sandwich & Snacks",
+    "order": 6
+  }
+]

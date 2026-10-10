@@ -1,0 +1,10 @@
+[
+  {
+    "id": "admin-1",
+    "username": "admin",
+    "passwordHash": "$2b$10$NDxRmh3f4uKJpcU8kyvMTOd/TdkIQdoI00S7.65xYIaLMNRMGb2rC",
+    "name": "Shop Owner (A-One Shawarma)",
+    "role": "admin",
+    "createdAt": "2026-10-10T17:55:31.139Z"
+  }
+]
