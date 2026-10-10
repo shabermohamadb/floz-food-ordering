@@ -55,16 +55,23 @@ export const CartProvider = ({ children }) => {
     }
   });
 
-  // Fulfillment preference
-  const [fulfillmentType, setFulfillmentType] = useState('pickup');
+  // Fulfillment preference ('delivery' | 'pickup')
+  const [fulfillmentType, setFulfillmentType] = useState('delivery');
 
   // Customer checkout form
   const [customerDetails, setCustomerDetails] = useState({
     name: '',
     phone: '',
     address: '',
+    locality: 'Nagercoil',
+    landmark: '',
     notes: ''
   });
+
+  // COD Order Placement State
+  const [placedOrder, setPlacedOrder] = useState(null);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [orderError, setOrderError] = useState(null);
 
   // Sync hash routing
   useEffect(() => {
@@ -163,8 +170,61 @@ export const CartProvider = ({ children }) => {
   // Calculations
   const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryFee = 0; // Zero fabricated fees
+  const deliveryFee = fulfillmentType === 'delivery' ? 30 : 0;
   const total = subtotal + deliveryFee;
+
+  // Cash on Delivery (COD) Order Placement Action
+  const placeCODOrder = async (overrideDetails = {}) => {
+    try {
+      setIsPlacingOrder(true);
+      setOrderError(null);
+
+      const details = { ...customerDetails, ...overrideDetails };
+
+      const payload = {
+        customerName: details.name,
+        phone: details.phone,
+        fulfillmentType,
+        address: details.address,
+        locality: details.locality,
+        landmark: details.landmark,
+        deliveryInstructions: details.notes,
+        items: cartItems.map(i => ({
+          id: i.id,
+          name: i.name,
+          quantity: i.quantity,
+          price: i.price
+        }))
+      };
+
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to place order. Please try again.');
+      }
+
+      setPlacedOrder(data.order);
+      // Important: clear cart ONLY upon verified database save!
+      clearCart();
+      return { success: true, order: data.order };
+    } catch (err) {
+      setOrderError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
+  const resetCheckout = () => {
+    setIsCheckoutOpen(false);
+    setPlacedOrder(null);
+    setOrderError(null);
+  };
 
   // Admin Authentication Actions
   const loginAdmin = async (username, password) => {
@@ -405,7 +465,14 @@ export const CartProvider = ({ children }) => {
         uploadDishImage,
         addCategory,
         deleteCategory,
-        logWhatsAppOrder
+        logWhatsAppOrder,
+        placedOrder,
+        setPlacedOrder,
+        isPlacingOrder,
+        orderError,
+        setOrderError,
+        placeCODOrder,
+        resetCheckout
       }}
     >
       {children}

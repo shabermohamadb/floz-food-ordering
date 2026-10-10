@@ -1,1 +1,176 @@
-[]
+[
+  {
+    "id": "COD-853742-358",
+    "orderNumber": "COD-853742-358",
+    "customerName": "Karthik Raja",
+    "phone": "9442011111",
+    "fulfillmentType": "delivery",
+    "address": "42 Asambu Road, Vadasery",
+    "locality": "Vadasery",
+    "landmark": "",
+    "deliveryInstructions": "",
+    "items": [
+      {
+        "id": "grill-chicken-full",
+        "name": "Grill chicken full",
+        "price": 480,
+        "quantity": 2,
+        "subtotal": 960,
+        "image": "/images/dishes/grill_chicken_full.jpg",
+        "category": "starters-chicken"
+      }
+    ],
+    "subtotal": 960,
+    "deliveryFee": 30,
+    "total": 990,
+    "paymentMethod": "COD",
+    "paymentStatus": "Paid",
+    "orderStatus": "Preparing",
+    "statusHistory": [
+      {
+        "status": "Pending",
+        "timestamp": "2026-10-10T19:34:13.742Z",
+        "note": "Order placed by customer via Cash on Delivery"
+      },
+      {
+        "from": "Pending",
+        "status": "Preparing",
+        "timestamp": "2026-10-10T19:34:13.901Z",
+        "note": "Status updated to Preparing by admin",
+        "updatedBy": "admin"
+      }
+    ],
+    "paymentHistory": [
+      {
+        "status": "Unpaid",
+        "timestamp": "2026-10-10T19:34:13.742Z",
+        "note": "Initial payment status upon order creation"
+      },
+      {
+        "paymentStatus": "Paid",
+        "timestamp": "2026-10-10T19:34:13.906Z",
+        "note": "Payment marked as Paid by admin",
+        "updatedBy": "admin"
+      }
+    ],
+    "createdAt": "2026-10-10T19:34:13.742Z",
+    "updatedAt": "2026-10-10T19:34:13.906Z",
+    "paidAt": "2026-10-10T19:34:13.906Z"
+  },
+  {
+    "id": "COD-687619-391",
+    "orderNumber": "COD-687619-391",
+    "customerName": "Karthik Raja",
+    "phone": "9442011111",
+    "fulfillmentType": "delivery",
+    "address": "42 Asambu Road, Vadasery",
+    "locality": "Vadasery",
+    "landmark": "",
+    "deliveryInstructions": "",
+    "items": [
+      {
+        "id": "grill-chicken-full",
+        "name": "Grill chicken full",
+        "price": 480,
+        "quantity": 2,
+        "subtotal": 960,
+        "image": "/images/dishes/grill_chicken_full.jpg",
+        "category": "starters-chicken"
+      }
+    ],
+    "subtotal": 960,
+    "deliveryFee": 30,
+    "total": 990,
+    "paymentMethod": "COD",
+    "paymentStatus": "Paid",
+    "orderStatus": "Preparing",
+    "statusHistory": [
+      {
+        "status": "Pending",
+        "timestamp": "2026-10-10T19:31:27.619Z",
+        "note": "Order placed by customer via Cash on Delivery"
+      },
+      {
+        "from": "Pending",
+        "status": "Preparing",
+        "timestamp": "2026-10-10T19:31:27.768Z",
+        "note": "Status updated to Preparing by admin",
+        "updatedBy": "admin"
+      }
+    ],
+    "paymentHistory": [
+      {
+        "status": "Unpaid",
+        "timestamp": "2026-10-10T19:31:27.619Z",
+        "note": "Initial payment status upon order creation"
+      },
+      {
+        "paymentStatus": "Paid",
+        "timestamp": "2026-10-10T19:31:27.774Z",
+        "note": "Payment marked as Paid by admin",
+        "updatedBy": "admin"
+      }
+    ],
+    "createdAt": "2026-10-10T19:31:27.619Z",
+    "updatedAt": "2026-10-10T19:31:27.774Z",
+    "paidAt": "2026-10-10T19:31:27.774Z"
+  },
+  {
+    "id": "COD-623572-188",
+    "orderNumber": "COD-623572-188",
+    "customerName": "Test Customer",
+    "phone": "9876543210",
+    "fulfillmentType": "delivery",
+    "address": "123 Cross Street, Kottar",
+    "locality": "Kottar",
+    "landmark": "",
+    "deliveryInstructions": "",
+    "items": [
+      {
+        "id": "grill-chicken-full",
+        "name": "Grill chicken full",
+        "price": 480,
+        "quantity": 1,
+        "subtotal": 480,
+        "image": "/images/dishes/grill_chicken_full.jpg",
+        "category": "starters-chicken"
+      }
+    ],
+    "subtotal": 480,
+    "deliveryFee": 30,
+    "total": 510,
+    "paymentMethod": "COD",
+    "paymentStatus": "Paid",
+    "orderStatus": "Preparing",
+    "statusHistory": [
+      {
+        "status": "Pending",
+        "timestamp": "2026-10-10T19:30:23.572Z",
+        "note": "Order placed by customer via Cash on Delivery"
+      },
+      {
+        "from": "Pending",
+        "status": "Preparing",
+        "timestamp": "2026-10-10T19:30:53.858Z",
+        "note": "Status updated to Preparing by admin",
+        "updatedBy": "admin"
+      }
+    ],
+    "paymentHistory": [
+      {
+        "status": "Unpaid",
+        "timestamp": "2026-10-10T19:30:23.572Z",
+        "note": "Initial payment status upon order creation"
+      },
+      {
+        "paymentStatus": "Paid",
+        "timestamp": "2026-10-10T19:30:53.863Z",
+        "note": "Payment marked as Paid by admin",
+        "updatedBy": "admin"
+      }
+    ],
+    "createdAt": "2026-10-10T19:30:23.572Z",
+    "updatedAt": "2026-10-10T19:30:53.863Z",
+    "paidAt": "2026-10-10T19:30:53.863Z"
+  }
+]

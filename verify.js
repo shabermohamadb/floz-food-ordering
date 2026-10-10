@@ -117,4 +117,104 @@ function checkDirForEmojis(dir) {
 checkDirForEmojis('./src');
 console.log('PASS: Zero emojis found anywhere in frontend or admin source files.');
 
-console.log('\nALL VERIFICATION CHECKS PASSED SUCCESSFULLY!');
+console.log('\n--- 5. Testing Cash on Delivery (COD) Order Workflow & Server Security ---');
+
+async function verifyCODWorkflow() {
+  try {
+    // 5a. Test order creation with price tampering protection
+    const tamperRes = await fetch('http://localhost:5173/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerName: 'Karthik Raja',
+        phone: '9442011111',
+        fulfillmentType: 'delivery',
+        address: '42 Asambu Road, Vadasery',
+        locality: 'Vadasery',
+        items: [{ id: 'grill-chicken-full', price: 10, quantity: 2 }] // Attempting to tamper price to 10
+      })
+    });
+
+    if (tamperRes.status !== 201) {
+      console.error('FAIL: Expected 201 Created from /api/orders, got', tamperRes.status);
+      process.exit(1);
+    }
+
+    const orderData = await tamperRes.json();
+    const order = orderData.order;
+
+    // Check DB price enforcement: grill-chicken-full is 480 each, qty 2 = 960, delivery = 30, total = 990
+    if (order.subtotal !== 960 || order.deliveryFee !== 30 || order.total !== 990) {
+      console.error('FAIL: Server-side price calculation failed or trusted client price:', order);
+      process.exit(1);
+    }
+
+    if (order.paymentMethod !== 'COD' || order.paymentStatus !== 'Unpaid' || order.orderStatus !== 'Pending') {
+      console.error('FAIL: Initial COD order states incorrect:', order);
+      process.exit(1);
+    }
+    console.log(`PASS: Created order ${order.id} with secure server price calculation (Rs. 990 total).`);
+
+    // 5b. Test rejection of invalid phone numbers
+    const invalidPhoneRes = await fetch('http://localhost:5173/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerName: 'Karthik Raja',
+        phone: '12345',
+        fulfillmentType: 'delivery',
+        address: '42 Asambu Road',
+        items: [{ id: 'grill-chicken-full', quantity: 1 }]
+      })
+    });
+
+    if (invalidPhoneRes.status !== 400) {
+      console.error('FAIL: Expected 400 Bad Request for invalid phone number, got', invalidPhoneRes.status);
+      process.exit(1);
+    }
+    console.log('PASS: Rejected order with invalid 5-digit phone number.');
+
+    // 5c. Test Admin Authentication & Status Transition
+    const authRes = await fetch('http://localhost:5173/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'admin', password: 'floz@nagercoil2026' })
+    });
+    const authData = await authRes.json();
+    const token = authData.token;
+
+    // Update status to 'Preparing'
+    const statusRes = await fetch(`http://localhost:5173/api/orders/${order.id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ status: 'Preparing' })
+    });
+    const updatedStatusOrder = await statusRes.json();
+    if (updatedStatusOrder.orderStatus !== 'Preparing') {
+      console.error('FAIL: Order status update failed:', updatedStatusOrder);
+      process.exit(1);
+    }
+    console.log('PASS: Admin updated order status to "Preparing".');
+
+    // 5d. Test COD Payment Status Update (Independent of status)
+    const payRes = await fetch(`http://localhost:5173/api/orders/${order.id}/payment`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ paymentStatus: 'Paid' })
+    });
+    const updatedPayOrder = await payRes.json();
+    if (updatedPayOrder.paymentStatus !== 'Paid' || !updatedPayOrder.paidAt) {
+      console.error('FAIL: COD payment status update failed:', updatedPayOrder);
+      process.exit(1);
+    }
+    console.log('PASS: Admin marked COD cash as "Paid" with recorded timestamp.');
+
+    console.log('\nALL VERIFICATION CHECKS PASSED SUCCESSFULLY!');
+  } catch (err) {
+    console.error('FAIL: Workflow test error:', err);
+    process.exit(1);
+  }
+}
+
+verifyCODWorkflow();
+

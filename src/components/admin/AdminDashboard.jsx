@@ -212,7 +212,7 @@ export const AdminDashboard = () => {
               }`}
             >
               <ShoppingBag className="w-4 h-4" />
-              <span>WhatsApp Orders</span>
+              <span>COD Orders</span>
             </button>
 
             <button

@@ -289,14 +289,14 @@ export const CartDrawer = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>
-                        Fulfillment ({fulfillmentType === 'pickup' ? 'Self Pickup' : 'Direct Delivery'})
+                        Fulfillment ({fulfillmentType === 'pickup' ? 'Self Pickup' : 'Home Delivery'})
                       </span>
                       <span className="font-semibold text-forest-800">
-                        {fulfillmentType === 'pickup' ? 'Free' : 'To be confirmed on WhatsApp'}
+                        {fulfillmentType === 'pickup' ? 'Free' : `₹${deliveryFee}`}
                       </span>
                     </div>
                     <div className="pt-2 border-t border-cream-300 flex justify-between text-sm font-bold text-forest-950">
-                      <span>Total Order Amount</span>
+                      <span>Total Payable (COD)</span>
                       <span className="tabular-nums">₹{total}</span>
                     </div>
                   </div>
@@ -310,12 +310,12 @@ export const CartDrawer = () => {
                     }}
                     className="w-full py-3.5 px-4 bg-forest-900 hover:bg-forest-800 text-cream-50 font-bold text-xs sm:text-sm rounded-lg flex items-center justify-center gap-2 transition-all shadow-md focus:outline-none focus:ring-2 focus:ring-forest-700 cursor-pointer"
                   >
-                    <span>Proceed to WhatsApp Order</span>
+                    <span>Proceed to Cash on Delivery Checkout</span>
                     <ArrowRight className="w-4 h-4" />
                   </motion.button>
 
                   <p className="text-[11px] text-charcoal-500 text-center leading-normal">
-                    No payment required upfront. Review order details before sending via WhatsApp.
+                    Pay in cash when your order is delivered. Zero advance payment required.
                   </p>
 
                 </div>

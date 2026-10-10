@@ -19,12 +19,13 @@ export const sanitizePhoneNumber = (phone) => {
 };
 
 export const formatOrderMessage = ({
-  shopName = "Nanjil Traditional Kitchen",
+  shopName = "A-One Shawarma Spot",
+  orderId = "",
   cartItems = [],
   subtotal = 0,
   deliveryFee = 0,
   total = 0,
-  fulfillmentType = "pickup",
+  fulfillmentType = "delivery",
   customerDetails = {}
 }) => {
   const dateStr = new Date().toLocaleDateString("en-IN", {
@@ -39,8 +40,11 @@ export const formatOrderMessage = ({
 
   const lines = [];
 
-  // Header (Using WhatsApp markdown *bold* and delimiters)
-  lines.push(`*NEW FOOD ORDER — ${shopName.toUpperCase()}*`);
+  // Header
+  lines.push(`*NEW CASH ON DELIVERY ORDER — ${shopName.toUpperCase()}*`);
+  if (orderId) {
+    lines.push(`*Order Reference:* ${orderId}`);
+  }
   lines.push(`Date: ${dateStr} at ${timeStr}`);
   lines.push(`----------------------------------------`);
 
@@ -54,38 +58,45 @@ export const formatOrderMessage = ({
 
   lines.push(`----------------------------------------`);
   
-  // Financial Summary
-  lines.push(`*FINANCIAL SUMMARY:*`);
+  // Financial Summary & COD
+  lines.push(`*PAYMENT & FINANCIAL SUMMARY:*`);
+  lines.push(`Payment Method: Cash on Delivery (COD)`);
+  lines.push(`Payment Status: Unpaid (Cash collected upon delivery)`);
   lines.push(`Items Subtotal: Rs. ${subtotal}`);
   if (fulfillmentType === "delivery") {
-    lines.push(`Delivery Charges: Rs. 0 (To be confirmed by shop owner)`);
+    lines.push(`Delivery Fee: Rs. ${deliveryFee}`);
   } else {
     lines.push(`Fulfillment: Self-Pickup (Free)`);
   }
-  lines.push(`*TOTAL AMOUNT PAYABLE: Rs. ${total}*`);
+  lines.push(`*TOTAL PAYABLE IN CASH: Rs. ${total}*`);
   
   lines.push(`----------------------------------------`);
 
   // Customer Information
-  lines.push(`*CUSTOMER DETAILS:*`);
+  lines.push(`*CUSTOMER & DELIVERY DETAILS:*`);
   lines.push(`Name: ${customerDetails.name ? customerDetails.name.trim() : "Valued Customer"}`);
-  lines.push(`Order Type: ${fulfillmentType === "delivery" ? "Home Delivery (Nagercoil)" : "Store Pickup / Takeaway"}`);
-
   if (customerDetails.phone && customerDetails.phone.trim()) {
     lines.push(`Contact Number: ${customerDetails.phone.trim()}`);
   }
+  lines.push(`Fulfillment: ${fulfillmentType === "delivery" ? "Home Delivery (Nagercoil)" : "Store Pickup / Takeaway"}`);
 
   if (fulfillmentType === "delivery") {
-    lines.push(`Delivery Address: ${customerDetails.address ? customerDetails.address.trim() : "Not provided"}`);
+    lines.push(`Address: ${customerDetails.address ? customerDetails.address.trim() : "Not provided"}`);
+    if (customerDetails.locality && customerDetails.locality.trim()) {
+      lines.push(`Area / Locality: ${customerDetails.locality.trim()}`);
+    }
+    if (customerDetails.landmark && customerDetails.landmark.trim()) {
+      lines.push(`Landmark: ${customerDetails.landmark.trim()}`);
+    }
   }
 
   if (customerDetails.notes && customerDetails.notes.trim()) {
-    lines.push(`Special Instructions: ${customerDetails.notes.trim()}`);
+    lines.push(`Kitchen Instructions: ${customerDetails.notes.trim()}`);
   }
 
   lines.push(`----------------------------------------`);
-  lines.push(`*NEXT STEP:*`);
-  lines.push(`Please review and reply to this message to confirm order acceptance, preparation time, and delivery confirmation.`);
+  lines.push(`*ORDER STATUS:* Pending kitchen acceptance`);
+  lines.push(`This order is saved in the shop system. Please confirm order dispatch.`);
 
   return lines.join("\n");
 };
@@ -93,6 +104,7 @@ export const formatOrderMessage = ({
 export const generateWhatsAppOrderLink = ({
   phoneNumber,
   shopName,
+  orderId,
   cartItems,
   subtotal,
   deliveryFee,
@@ -108,6 +120,7 @@ export const generateWhatsAppOrderLink = ({
       error: "WhatsApp ordering number has not been configured yet. Please configure the verified shop mobile number in Demo Settings.",
       messageText: formatOrderMessage({
         shopName,
+        orderId,
         cartItems,
         subtotal,
         deliveryFee,
@@ -120,6 +133,7 @@ export const generateWhatsAppOrderLink = ({
 
   const messageText = formatOrderMessage({
     shopName,
+    orderId,
     cartItems,
     subtotal,
     deliveryFee,

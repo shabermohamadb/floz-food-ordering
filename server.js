@@ -323,39 +323,276 @@ app.post('/api/upload', requireAdmin, upload.single('image'), (req, res) => {
   });
 });
 
-// ==================== ORDERS LOG ROUTES ====================
+// ==================== COD ORDERS API ROUTES ====================
 
-// Public/Checkout: Log an order when WhatsApp is initiated
+// Public/Checkout: Place a verified Cash on Delivery (COD) order
 app.post('/api/orders', (req, res) => {
-  const { customerName, phone, fulfillmentType, address, notes, items, total } = req.body;
+  const {
+    customerName,
+    phone,
+    fulfillmentType = 'delivery',
+    address,
+    locality,
+    landmark,
+    deliveryInstructions,
+    items
+  } = req.body;
 
-  const orders = readJson(ORDERS_FILE, []);
-  const orderId = `ORD-${Date.now().toString().slice(-6)}`;
+  // 1. Validate customer details
+  if (!customerName || !customerName.trim() || customerName.trim().length < 2) {
+    return res.status(400).json({ error: 'Please provide a valid full name' });
+  }
 
+  const cleanPhone = phone ? phone.toString().replace(/[^\d]/g, '').slice(-10) : '';
+  if (!cleanPhone || !/^[6-9]\d{9}$/.test(cleanPhone)) {
+    return res.status(400).json({
+      error: 'Please provide a valid 10-digit Indian mobile number (e.g., 9876543210)'
+    });
+  }
+
+  const isDelivery = fulfillmentType === 'delivery';
+  if (isDelivery && (!address || !address.trim() || address.trim().length < 5)) {
+    return res.status(400).json({
+      error: 'Please provide your complete delivery street address in Nagercoil'
+    });
+  }
+
+  // 2. Validate items array
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'Your cart is empty' });
+  }
+
+  // 3. Authoritative product validation against database (data/menu.json)
+  const menu = readJson(MENU_FILE, []);
+  const menuMap = new Map(menu.map(m => [m.id, m]));
+
+  const validatedItems = [];
+  let calculatedSubtotal = 0;
+
+  for (const item of items) {
+    const dbItem = menuMap.get(item.id);
+    if (!dbItem) {
+      return res.status(400).json({
+        error: `Dish "${item.name || item.id}" is no longer on our menu. Please refresh your cart.`
+      });
+    }
+
+    if (dbItem.isAvailable === false) {
+      return res.status(400).json({
+        error: `Sorry, "${dbItem.name}" is currently out of stock. Please remove it from your cart to proceed.`
+      });
+    }
+
+    const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
+    const itemPrice = Number(dbItem.price);
+    const itemSubtotal = itemPrice * qty;
+
+    calculatedSubtotal += itemSubtotal;
+
+    // Snapshot item details at time of order
+    validatedItems.push({
+      id: dbItem.id,
+      name: dbItem.name,
+      price: itemPrice,
+      quantity: qty,
+      subtotal: itemSubtotal,
+      image: dbItem.image || '',
+      category: dbItem.category || ''
+    });
+  }
+
+  // 4. Calculate delivery fee securely (Free for Pickup, Flat Rs 30 for Nagercoil Delivery)
+  const deliveryFee = isDelivery ? 30 : 0;
+  const calculatedTotal = calculatedSubtotal + deliveryFee;
+
+  // 5. Generate unique Order ID
+  const now = new Date();
+  const timestampSuffix = now.getTime().toString().slice(-6);
+  const randSuffix = Math.floor(100 + Math.random() * 900);
+  const orderId = `COD-${timestampSuffix}-${randSuffix}`;
+
+  // 6. Build persistent order object
   const newOrder = {
     id: orderId,
-    customerName: customerName || 'Valued Customer',
-    phone: phone || '',
-    fulfillmentType: fulfillmentType || 'pickup',
-    address: address || '',
-    notes: notes || '',
-    items: items || [],
-    total: total || 0,
-    timestamp: new Date().toISOString()
+    orderNumber: orderId,
+    customerName: customerName.trim(),
+    phone: cleanPhone,
+    fulfillmentType: isDelivery ? 'delivery' : 'pickup',
+    address: isDelivery ? address.trim() : 'Store Pickup / Takeaway',
+    locality: locality ? locality.trim() : (isDelivery ? 'Nagercoil' : 'A-One Shawarma Spot'),
+    landmark: landmark ? landmark.trim() : '',
+    deliveryInstructions: deliveryInstructions ? deliveryInstructions.trim() : '',
+    items: validatedItems,
+    subtotal: calculatedSubtotal,
+    deliveryFee,
+    total: calculatedTotal,
+    paymentMethod: 'COD',
+    paymentStatus: 'Unpaid',
+    orderStatus: 'Pending',
+    statusHistory: [
+      {
+        status: 'Pending',
+        timestamp: now.toISOString(),
+        note: 'Order placed by customer via Cash on Delivery'
+      }
+    ],
+    paymentHistory: [
+      {
+        status: 'Unpaid',
+        timestamp: now.toISOString(),
+        note: 'Initial payment status upon order creation'
+      }
+    ],
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString()
   };
 
+  // 7. Save to persistent storage
+  const orders = readJson(ORDERS_FILE, []);
   orders.unshift(newOrder);
-  // Keep last 100 orders
-  if (orders.length > 100) orders.length = 100;
-  writeJson(ORDERS_FILE, orders);
 
-  return res.status(201).json({ success: true, orderId });
+  // Keep up to 250 orders
+  if (orders.length > 250) orders.length = 250;
+  
+  const saved = writeJson(ORDERS_FILE, orders);
+  if (!saved) {
+    return res.status(500).json({
+      error: 'Failed to record your order due to a storage issue. Please try again.'
+    });
+  }
+
+  return res.status(201).json({
+    success: true,
+    order: newOrder
+  });
 });
 
-// Admin: Get recent orders
-app.get('/api/orders', requireAdmin, (req, res) => {
+// Public: Get single order for customer confirmation/tracking
+app.get('/api/orders/:id', (req, res) => {
+  const { id } = req.params;
   const orders = readJson(ORDERS_FILE, []);
+  const order = orders.find(o => o.id === id);
+
+  if (!order) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  return res.json(order);
+});
+
+// Admin: Get all orders with search, status, and payment filters
+app.get('/api/orders', requireAdmin, (req, res) => {
+  const { status, paymentStatus, q } = req.query;
+  let orders = readJson(ORDERS_FILE, []);
+
+  if (status && status !== 'all') {
+    orders = orders.filter(o => o.orderStatus === status);
+  }
+
+  if (paymentStatus && paymentStatus !== 'all') {
+    orders = orders.filter(o => o.paymentStatus === paymentStatus);
+  }
+
+  if (q && q.trim()) {
+    const query = q.trim().toLowerCase();
+    orders = orders.filter(o =>
+      o.id.toLowerCase().includes(query) ||
+      o.customerName.toLowerCase().includes(query) ||
+      o.phone.includes(query)
+    );
+  }
+
   return res.json(orders);
+});
+
+// Admin: Update order status with audit log
+app.patch('/api/orders/:id/status', requireAdmin, (req, res) => {
+  const { id } = req.params;
+  const { status, note } = req.body;
+
+  const validStatuses = [
+    'Pending',
+    'Confirmed',
+    'Preparing',
+    'Ready for delivery',
+    'Out for delivery',
+    'Delivered',
+    'Cancelled'
+  ];
+
+  if (!status || !validStatuses.includes(status)) {
+    return res.status(400).json({
+      error: `Invalid status. Allowed values: ${validStatuses.join(', ')}`
+    });
+  }
+
+  const orders = readJson(ORDERS_FILE, []);
+  const orderIndex = orders.findIndex(o => o.id === id);
+
+  if (orderIndex === -1) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  const order = orders[orderIndex];
+  const previousStatus = order.orderStatus;
+  const now = new Date().toISOString();
+
+  order.orderStatus = status;
+  order.updatedAt = now;
+
+  if (!order.statusHistory) order.statusHistory = [];
+  order.statusHistory.push({
+    from: previousStatus,
+    status,
+    timestamp: now,
+    note: note ? note.trim() : `Status updated to ${status} by admin`,
+    updatedBy: req.user?.username || 'admin'
+  });
+
+  writeJson(ORDERS_FILE, orders);
+  return res.json(order);
+});
+
+// Admin: Update COD payment status independently from delivery status
+app.patch('/api/orders/:id/payment', requireAdmin, (req, res) => {
+  const { id } = req.params;
+  const { paymentStatus, note } = req.body;
+
+  const validPaymentStatuses = ['Unpaid', 'Paid'];
+  if (!paymentStatus || !validPaymentStatuses.includes(paymentStatus)) {
+    return res.status(400).json({
+      error: `Invalid payment status. Allowed values: ${validPaymentStatuses.join(', ')}`
+    });
+  }
+
+  const orders = readJson(ORDERS_FILE, []);
+  const orderIndex = orders.findIndex(o => o.id === id);
+
+  if (orderIndex === -1) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  const order = orders[orderIndex];
+  const now = new Date().toISOString();
+
+  order.paymentStatus = paymentStatus;
+  order.updatedAt = now;
+  if (paymentStatus === 'Paid') {
+    order.paidAt = now;
+  } else {
+    delete order.paidAt;
+  }
+
+  if (!order.paymentHistory) order.paymentHistory = [];
+  order.paymentHistory.push({
+    paymentStatus,
+    timestamp: now,
+    note: note ? note.trim() : `Payment marked as ${paymentStatus} by admin`,
+    updatedBy: req.user?.username || 'admin'
+  });
+
+  writeJson(ORDERS_FILE, orders);
+  return res.json(order);
 });
 
 // Export app for Vite middleware or standalone listen

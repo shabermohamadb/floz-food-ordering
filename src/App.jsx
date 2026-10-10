@@ -8,7 +8,7 @@ import { AboutSection } from './components/AboutSection';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { CartDrawer } from './components/CartDrawer';
-import { WhatsAppCheckoutModal } from './components/WhatsAppCheckoutModal';
+import { CODCheckoutModal } from './components/CODCheckoutModal';
 import { DemoSettingsModal } from './components/DemoSettingsModal';
 import { MobileCartBar } from './components/MobileCartBar';
 import { AdminPortal } from './components/admin/AdminPortal';
@@ -41,7 +41,7 @@ function AppContent() {
 
       {/* Overlays & Drawers */}
       <CartDrawer />
-      <WhatsAppCheckoutModal />
+      <CODCheckoutModal />
       <DemoSettingsModal />
       <MobileCartBar />
     </div>
