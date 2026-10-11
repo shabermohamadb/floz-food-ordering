@@ -7,7 +7,7 @@ export const VerificationBanner = () => {
   const { businessConfig, setIsSettingsOpen, navigateTo } = useCart();
 
   return (
-    <aside aria-label="Client Demo Status" className="bg-forest-950 text-cream-100 text-xs border-b border-forest-800 transition-all">
+    <aside aria-label="Client Demo Status" className="hidden md:block bg-forest-950 text-cream-100 text-xs border-b border-forest-800 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <span className="inline-flex items-center gap-1 font-semibold bg-forest-800 text-cream-200 px-2 py-0.5 rounded text-[11px] uppercase tracking-wider">

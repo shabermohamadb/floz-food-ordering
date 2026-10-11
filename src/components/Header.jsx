@@ -1,70 +1,98 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, MessageSquare, MapPin, Menu as MenuIcon, X, ShieldCheck } from 'lucide-react';
+import { ShoppingBag, MessageSquare, MapPin, Search, X, ShieldCheck, ChevronDown } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 export const Header = () => {
-  const { businessConfig, itemCount, subtotal, setIsCartOpen, navigateTo } = useCart();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const {
+    businessConfig,
+    itemCount,
+    subtotal,
+    setIsCartOpen,
+    navigateTo,
+    selectedLocality,
+    setIsLocalityPickerOpen,
+    mobileSearchQuery,
+    setMobileSearchQuery
+  } = useCart();
+
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 15);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollToSection = (id) => {
-    setMobileMenuOpen(false);
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
+  const handleSearchFocus = () => {
+    const menuEl = document.getElementById('menu');
+    if (menuEl && window.scrollY < 180) {
+      menuEl.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <header
-      className={`sticky top-0 z-40 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-cream-50/95 backdrop-blur-md shadow-sm border-b border-cream-200 py-0'
-          : 'bg-cream-50/90 backdrop-blur-xs border-b border-cream-200/70 py-1'
+      className={`sticky top-0 z-40 transition-all duration-200 bg-white/95 backdrop-blur-md border-b border-cream-200 shadow-2xs ${
+        isScrolled ? 'py-0' : 'py-0.5'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6">
+        
+        {/* ========================================================================= */}
+        {/* 1. TOP HEADER ROW (Compact on Mobile, Spacious on Desktop)               */}
+        {/* ========================================================================= */}
+        <div className="flex items-center justify-between h-14 sm:h-20">
           
-          {/* Brand Identity / Wordmark with Verified Logo */}
-          <div className="flex items-center gap-3">
-            <a
-              href="#hero"
-              className="group flex items-center gap-3 text-left focus:outline-none focus:ring-2 focus:ring-forest-700 rounded-md transition-transform duration-200 hover:scale-[1.01]"
-            >
-              {businessConfig.logoUrl && (
-                <div className="w-12 h-12 rounded-full overflow-hidden border border-cream-300 bg-white p-0.5 shrink-0 shadow-xs transition-shadow duration-200 group-hover:shadow-sm">
+          {/* Brand Identity & Location Selector */}
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            {businessConfig.logoUrl && (
+              <a href="#hero" className="shrink-0">
+                <div className="w-9 h-9 sm:w-12 sm:h-12 rounded-full overflow-hidden border border-cream-300 bg-white p-0.5 shadow-2xs">
                   <img
                     src={businessConfig.logoUrl}
                     alt={businessConfig.shopName}
                     className="w-full h-full object-contain"
                   />
                 </div>
-              )}
-              <div>
-                <span className="block font-heading text-xl sm:text-2xl font-extrabold tracking-tight text-forest-950 group-hover:text-forest-800 transition-colors">
+              </a>
+            )}
+
+            <div className="text-left min-w-0">
+              <a href="#hero" className="block focus:outline-none">
+                <span className="block font-heading text-sm sm:text-2xl font-extrabold tracking-tight text-forest-950 truncate">
                   {businessConfig.shopName}
                 </span>
-                <span className="flex items-center gap-1.5 text-xs text-charcoal-500 font-medium tracking-wide">
-                  <span className="text-terracotta-600 font-semibold">{businessConfig.brandSubtitle}</span>
-                  <span>·</span>
-                  <MapPin className="w-3 h-3 text-forest-700" />
-                  <span>Nagercoil</span>
+              </a>
+
+              {/* Delivery Location Pill (Interactive Zomato Pattern) */}
+              <button
+                type="button"
+                onClick={() => setIsLocalityPickerOpen(true)}
+                className="inline-flex items-center gap-1 text-[11px] sm:text-xs text-charcoal-600 hover:text-forest-900 font-medium transition-colors cursor-pointer group"
+                title="Change delivery location"
+              >
+                <MapPin className="w-3 h-3 text-terracotta-500 shrink-0" />
+                <span className="font-semibold text-forest-950 truncate max-w-[140px] sm:max-w-none">
+                  {selectedLocality || 'Nagercoil'}
                 </span>
-              </div>
-            </a>
+                <span className="text-charcoal-400">·</span>
+                <span className="text-charcoal-500 hidden xs:inline">Nagercoil</span>
+                <ChevronDown className="w-3 h-3 text-charcoal-400 group-hover:text-charcoal-700 shrink-0" />
+              </button>
+            </div>
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-7">
             <button
               onClick={() => scrollToSection('hero')}
@@ -100,10 +128,9 @@ export const Header = () => {
             </button>
           </nav>
 
-          {/* Right Action Buttons */}
-          <div className="flex items-center gap-3">
-            
-            {/* WhatsApp Quick Action CTA */}
+          {/* Right Actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* WhatsApp Quick Action CTA (Desktop) */}
             <button
               onClick={() => scrollToSection('menu')}
               className="hidden lg:inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-forest-900 bg-forest-100 hover:bg-forest-100/80 rounded-md border border-forest-600/30 transition-all hover:shadow-xs active:scale-95"
@@ -112,12 +139,12 @@ export const Header = () => {
               <span>Direct WhatsApp Orders</span>
             </button>
 
-            {/* Shopping Cart Button with Animated Bounce */}
+            {/* Shopping Cart Button */}
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsCartOpen(true)}
               aria-label={`View Shopping Cart with ${itemCount} items`}
-              className="relative inline-flex items-center gap-2.5 px-4 py-2 bg-forest-900 hover:bg-forest-800 text-cream-50 rounded-md transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-forest-600 focus:ring-offset-2"
+              className="relative inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-forest-900 hover:bg-forest-800 text-cream-50 rounded-lg transition-all shadow-sm focus:outline-none"
             >
               <div className="relative">
                 <ShoppingBag className="w-4 h-4 text-cream-100" />
@@ -128,94 +155,47 @@ export const Header = () => {
                       initial={{ scale: 0.5, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ scale: 0.5, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                      className="absolute -top-2.5 -right-2.5 bg-terracotta-500 text-white font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center tabular-nums shadow-xs"
+                      className="absolute -top-2 -right-2.5 bg-terracotta-500 text-white font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center tabular-nums shadow-xs"
                     >
                       {itemCount}
                     </motion.span>
                   )}
                 </AnimatePresence>
               </div>
-              <span className="text-xs font-semibold tracking-wide">
-                Cart {itemCount > 0 && <span className="text-cream-200 ml-0.5">· ₹{subtotal}</span>}
+              <span className="text-xs font-bold tracking-wide">
+                <span className="hidden sm:inline">Cart </span>
+                {itemCount > 0 && <span className="text-cream-200">₹{subtotal}</span>}
               </span>
             </motion.button>
-
-            {/* Mobile Hamburger Button */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-charcoal-700 hover:text-forest-900 rounded-md focus:outline-none focus:ring-2 focus:ring-forest-700"
-              aria-label="Toggle navigation menu"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
-            </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer with Smooth Animation */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
-              className="md:hidden overflow-hidden border-t border-cream-200 bg-cream-50"
-            >
-              <div className="py-4 space-y-2">
-                <button
-                  onClick={() => scrollToSection('hero')}
-                  className="w-full text-left px-3 py-2 text-sm font-medium text-charcoal-700 hover:bg-cream-100 rounded transition-colors"
-                >
-                  Home
-                </button>
-                <button
-                  onClick={() => scrollToSection('menu')}
-                  className="w-full text-left px-3 py-2 text-sm font-medium text-charcoal-700 hover:bg-cream-100 rounded transition-colors"
-                >
-                  Menu
-                </button>
-                <button
-                  onClick={() => scrollToSection('about')}
-                  className="w-full text-left px-3 py-2 text-sm font-medium text-charcoal-700 hover:bg-cream-100 rounded transition-colors"
-                >
-                  About
-                </button>
-                <button
-                  onClick={() => scrollToSection('contact')}
-                  className="w-full text-left px-3 py-2 text-sm font-medium text-charcoal-700 hover:bg-cream-100 rounded transition-colors"
-                >
-                  Contact
-                </button>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigateTo('admin');
-                  }}
-                  className="w-full text-left px-3 py-2 text-sm font-semibold text-forest-900 hover:bg-cream-100 rounded flex items-center gap-1.5 transition-colors"
-                >
-                  <ShieldCheck className="w-4 h-4 text-forest-700" />
-                  <span>Owner Admin Portal</span>
-                </button>
-                <div className="pt-2">
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      setIsCartOpen(true);
-                    }}
-                    className="w-full flex items-center justify-between px-3 py-2.5 bg-forest-900 text-cream-50 rounded text-sm font-semibold shadow-xs"
-                  >
-                    <span className="flex items-center gap-2">
-                      <ShoppingBag className="w-4 h-4" />
-                      <span>View Order Cart</span>
-                    </span>
-                    <span>{itemCount} items · ₹{subtotal}</span>
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* ========================================================================= */}
+        {/* 2. MOBILE QUICK SEARCH BAR (Sticky directly under compact header)         */}
+        {/* ========================================================================= */}
+        <div className="md:hidden pb-2.5 pt-0.5">
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal-400" />
+            <input
+              type="text"
+              value={mobileSearchQuery || ''}
+              onChange={(e) => setMobileSearchQuery(e.target.value)}
+              onFocus={handleSearchFocus}
+              placeholder="Search shawarma, grill chicken, biryani..."
+              className="w-full pl-9 pr-8 py-2 bg-cream-100/80 focus:bg-white border border-cream-200 focus:border-forest-700 rounded-xl text-xs text-charcoal-900 placeholder:text-charcoal-400 focus:outline-none transition-all shadow-2xs"
+            />
+            {mobileSearchQuery && (
+              <button
+                onClick={() => setMobileSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-charcoal-400 hover:text-charcoal-700"
+                aria-label="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
+
       </div>
     </header>
   );

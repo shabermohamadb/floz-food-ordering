@@ -7,7 +7,7 @@ export const Footer = () => {
   const { businessConfig, setIsSettingsOpen } = useCart();
 
   return (
-    <footer className="bg-forest-950 text-cream-200 border-t border-forest-900 pt-12 pb-16 sm:pb-12 text-left">
+    <footer className="bg-forest-950 text-cream-200 border-t border-forest-900 pt-12 pb-28 sm:pb-12 text-left">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         
         {/* Main Footer Grid */}

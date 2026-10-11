@@ -60,7 +60,8 @@ export const CODCheckoutModal = () => {
     orderError,
     setOrderError,
     placeCODOrder,
-    resetCheckout
+    resetCheckout,
+    setIsOrdersOpen
   } = useCart();
 
   // Active Wizard Step: 1: Cart, 2: Details, 3: Payment, 4: Confirm
@@ -308,12 +309,23 @@ export const CODCheckoutModal = () => {
                   Your order is already saved in the shop system. Sending order details on WhatsApp notifies the shop counter immediately.
                 </p>
 
-                <div className="flex justify-center pt-2">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-2">
+                  <button
+                    onClick={() => {
+                      resetCheckout();
+                      setIsOrdersOpen(true);
+                    }}
+                    className="w-full sm:w-auto px-6 py-2.5 bg-forest-900 hover:bg-forest-800 text-cream-50 text-xs font-bold rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                  >
+                    <Clock className="w-3.5 h-3.5 text-terracotta-400" />
+                    <span>Track Order Status Live</span>
+                  </button>
+
                   <button
                     onClick={resetCheckout}
-                    className="px-6 py-2.5 bg-cream-100 hover:bg-cream-200 text-charcoal-800 text-xs font-bold rounded-lg border border-cream-300 transition-colors cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-2.5 bg-cream-100 hover:bg-cream-200 text-charcoal-800 text-xs font-bold rounded-lg border border-cream-300 transition-colors cursor-pointer"
                   >
-                    Back to Menu / Order More
+                    Back to Menu
                   </button>
                 </div>
               </div>

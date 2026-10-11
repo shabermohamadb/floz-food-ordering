@@ -65,7 +65,7 @@ export const Hero = () => {
   };
 
   return (
-    <section id="hero" className="relative bg-cream-100 border-b border-cream-200 overflow-hidden min-h-[560px] flex items-center">
+    <section id="hero" className="relative bg-cream-100 border-b border-cream-200 overflow-hidden min-h-[160px] sm:min-h-[340px] md:min-h-[560px] flex items-center">
       
       {/* ========================================================================= */}
       {/* 1. BACKGROUND VIDEO LAYER: High Visibility & Vibrant Culinary Motion      */}
@@ -91,8 +91,27 @@ export const Hero = () => {
       {/* ========================================================================= */}
       {/* 2. MAIN HERO CONTENT CONTAINER                                            */}
       {/* ========================================================================= */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 md:py-16 lg:py-20 relative z-10 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 md:py-16 lg:py-20 relative z-10 w-full">
+        {/* MOBILE VIEW (< sm): Sleek, high-impact app hero banner */}
+        <div className="sm:hidden text-left space-y-2 py-2">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-white/90 backdrop-blur-xs border border-cream-300 rounded text-[10px] font-bold text-charcoal-700 shadow-2xs">
+            <Flame className="w-3 h-3 text-terracotta-500" />
+            <span>A-One Shawarma Spot</span>
+            <span className="text-cream-300">|</span>
+            <span className="text-forest-700">25–35 mins</span>
+          </div>
+
+          <h1 className="text-lg font-heading font-extrabold text-forest-950 leading-snug">
+            Fresh Charcoal Grills, Shawarma & Hyderabad Dum Biryani
+          </h1>
+
+          <p className="text-[11px] text-charcoal-600 leading-normal">
+            Direct kitchen rates · Takeaway & delivery in Nagercoil.
+          </p>
+        </div>
+
+        {/* DESKTOP VIEW (>= sm): Full spacious presentation */}
+        <div className="hidden sm:grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
           
           {/* Left Column: Clean text layout directly on background (No glass box) */}
           <motion.div

@@ -73,6 +73,46 @@ export const CartProvider = ({ children }) => {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [orderError, setOrderError] = useState(null);
 
+  // Mobile UI & Discovery State
+  const [selectedDetailItem, setSelectedDetailItem] = useState(null);
+  const [selectedLocality, setSelectedLocality] = useState(() => {
+    return localStorage.getItem('floz_customer_locality') || 'Nagercoil';
+  });
+  const [customerOrders, setCustomerOrders] = useState(() => {
+    try {
+      const saved = localStorage.getItem('floz_customer_orders');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isOrdersOpen, setIsOrdersOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isLocalityPickerOpen, setIsLocalityPickerOpen] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
+
+  const addCustomerOrder = (order) => {
+    setCustomerOrders(prev => {
+      const filtered = prev.filter(o => o.id !== order.id);
+      const updated = [order, ...filtered];
+      try {
+        localStorage.setItem('floz_customer_orders', JSON.stringify(updated));
+      } catch (e) {
+        console.warn('LocalStorage save error:', e);
+      }
+      return updated;
+    });
+  };
+
+  const updateLocality = (locality) => {
+    setSelectedLocality(locality);
+    try {
+      localStorage.setItem('floz_customer_locality', locality);
+    } catch {}
+    setCustomerDetails(prev => ({ ...prev, locality }));
+  };
+
   // Sync hash routing
   useEffect(() => {
     const handleHashChange = () => {
@@ -209,6 +249,7 @@ export const CartProvider = ({ children }) => {
       }
 
       setPlacedOrder(data.order);
+      addCustomerOrder(data.order);
       // Important: clear cart ONLY upon verified database save!
       clearCart();
       return { success: true, order: data.order };
@@ -472,7 +513,25 @@ export const CartProvider = ({ children }) => {
         orderError,
         setOrderError,
         placeCODOrder,
-        resetCheckout
+        resetCheckout,
+        selectedDetailItem,
+        setSelectedDetailItem,
+        selectedLocality,
+        setSelectedLocality,
+        updateLocality,
+        customerOrders,
+        setCustomerOrders,
+        addCustomerOrder,
+        isOrdersOpen,
+        setIsOrdersOpen,
+        isProfileOpen,
+        setIsProfileOpen,
+        isLocalityPickerOpen,
+        setIsLocalityPickerOpen,
+        mobileSearchQuery,
+        setMobileSearchQuery,
+        activeCategory,
+        setActiveCategory
       }}
     >
       {children}
